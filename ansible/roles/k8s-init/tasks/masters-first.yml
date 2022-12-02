@@ -1,7 +1,7 @@
-- name: generate the kubeadm yaml configuration
-  template:
-    src: templates/k8s-kubeadm2.j2
-    dest: /home/sysop/kube-adm.yml
+#- name: generate the kubeadm yaml configuration
+#  template:
+#    src: templates/k8s-kubeadm2.j2
+#    dest: /home/sysop/kube-adm.yml
 
 - name: ensure the kubelet is enabled
   shell: sudo systemctl enable kubelet
