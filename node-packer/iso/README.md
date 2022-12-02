@@ -1,0 +1,1 @@
+curl https://releases.ubuntu.com/22.04/ubuntu-22.04.1-live-server-amd64.iso --output buntu-22.04.1-live-server-amd64.iso

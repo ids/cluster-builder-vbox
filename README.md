@@ -80,3 +80,13 @@ bash control-cluster eg/k8s [start | stop | pause | resume | savestate]
 ```
 
 This makes it easy to suspend a functioning cluster and resume it later, which is very useful in development.
+
+
+## Notes
+
+### Ingress NGINX
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.5.1/deploy/static/provider/cloud/deploy.yaml
+```
+[NGINX Test Instructions](https://kubernetes.github.io/ingress-nginx/deploy/#local-testing)

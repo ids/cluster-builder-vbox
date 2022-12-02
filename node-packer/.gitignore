@@ -6,6 +6,7 @@ aws_manifest.json
 images
 **/.DS_Store
 iso/**
+!iso/README.md
 keys/authorized_keys
 manual
 

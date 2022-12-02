@@ -3,7 +3,6 @@
 if [ ! -f keys/authorized_keys ]; then
   echo
   cp ~/.ssh/id_rsa.pub ./keys/authorized_keys
-  exit 1
 fi
 
 if [ ! -f keys/authorized_keys ]; then
@@ -11,6 +10,12 @@ if [ ! -f keys/authorized_keys ]; then
   echo "Unable to find SSH public key at ~/.ssh/id_rsa.pub to seed ./keys/authorized_keys!"
   echo "Please make sure you have a public key available for passwordless SSH installation into the node."
   exit 1
+fi
+
+if [ ! -f iso/ubuntu-22.04.1-live-server-amd64.iso ]; then
+  echo
+  mkdir -p iso
+  curl https://releases.ubuntu.com/22.04/ubuntu-22.04.1-live-server-amd64.iso --output iso/ubuntu-22.04.1-live-server-amd64.iso
 fi
 
 packer build cluster-node.json
