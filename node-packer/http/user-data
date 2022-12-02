@@ -1,0 +1,28 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US
+  keyboard:
+    layout: us
+  ssh:
+    install-server: true
+    allow-pw: true
+  early-commands:
+    # otherwise packer tries to connect and exceed max attempts:
+    - systemctl stop ssh    
+    - sleep 30 #https://github.com/chef/bento/issues/1408
+  user-data:
+    preserve_hostname: false
+    disable_root: false
+    users:
+      - name: sysop
+        hashed_passwd: $6$fv8V4L/RmAMUx7g8$rDAlEt43nigllEEjAknWiRelC.k7fho.eQfzo4SUubAC6qQDcv7dYPxxXMCX0yUbRuEnJmEPtddSp/T1G7YAT/
+        lock-passwd: false
+        ssh_pwauth: true
+        chpasswd: { expire: false }
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        groups: users, admin
+        shell: /bin/bash
+
+
+

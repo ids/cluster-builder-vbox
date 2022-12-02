@@ -1,0 +1,48 @@
+#!/bin/bash
+INVENTORY_FILE=$1
+ACTION=$2
+
+export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
+export ANSIBLE_CONFIG=./ansible.cfg
+
+function show_usage () {
+  echo "usage: $ bash control-control <inventory-file> <action: start|suspend|stop|destroy>"
+  echo
+  echo "eg."
+  echo
+  echo "$ bash control-control local/k8s1 suspend"
+  echo 
+  echo "$ bash control-control local/k8s1 start"
+  echo
+  exit 1
+}
+
+if [ -z $INVENTORY_FILE ]; then 
+  echo
+  echo "Cluster package not specified!"
+  echo
+  show_usage
+fi
+
+INVENTORY_FILE=./clusters/$INVENTORY_FILE/hosts
+
+if [ ! -f $INVENTORY_FILE ]; then
+  echo
+  echo "Unable to find inventory file @: ${INVENTORY_FILE}"
+  exit 1
+fi
+
+if [ -z $ACTION ]; then 
+  echo
+  echo "Action not specified!"
+  echo
+  show_usage
+fi
+
+if [ "$ACTION" == "start" ] || [ "$ACTION" == "stop" ] || [ "$ACTION" == "savestate" ] || [ "$ACTION" == "pause" ] || [ "$ACTION" == "resume" ]; then
+  ansible-playbook -i $INVENTORY_FILE ansible/control-vms.yml --e "vm_action=$ACTION"
+else
+  echo
+  echo "Invalid: You must specify an action that is one of: start, stop, pause, resume, savestate"
+  echo
+fi

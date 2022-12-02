@@ -1,0 +1,12 @@
+packer_cache
+**/*.retry
+*.retry
+.vscode
+aws_manifest.json
+images
+**/.DS_Store
+iso/**
+keys/authorized_keys
+manual
+
+

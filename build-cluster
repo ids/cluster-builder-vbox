@@ -1,0 +1,127 @@
+#!/bin/bash
+INVENTORY_FOLDER=$1
+SERVER_WAIT=90s
+REMOTE_USER=root
+
+export ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
+export ANSIBLE_CONFIG=./ansible.cfg
+
+function desktop_deploy () {
+
+#  echo "Validating SUDO session (Enter local SUDO password for VMware network management if prompted)"
+#  sudo date
+
+  echo "Creating the VirtualBox VMs and configuring the network for static IP assignment..."
+  ansible-playbook -i $INVENTORY_FILE ansible/deploy-vms.yml --extra-vars "ova_template=${OVA_TEMPLATE_FILE} cluster_pkg_folder='${CLUSTER_PKG_FOLDER}'"
+  if [ $? -ne 0 ]; then
+    echo "There was a problem creating the VMs"
+    exit 1
+  fi
+  
+  echo "Configuring the Kubernetes Cluster..."
+  ansible-playbook -i $INVENTORY_FILE ansible/kubernetes.yml --extra-vars="cluster_pkg_folder=${CLUSTER_PKG_FOLDER}"
+  if [ $? -ne 0 ]; then
+    echo "FAIL: cluster creation failed!"
+    exit 1
+  fi
+
+  if [ -f clusters/$CLUSTER_PKG_FOLDER/test-cluster ]; then
+    bash clusters/$CLUSTER_PKG_FOLDER/test-cluster
+  fi 
+
+  echo -e "${TC}------------------------------------------------------------${NC}"
+  echo "SUCCESS: cluster created!"
+
+}
+
+function cluster_info_display() {
+
+  echo
+  echo -e "${TC}-----------------------------------------------------------------------------------${NC}"
+  echo
+  echo -e " Cluster Name    : ${TC}${CLUSTER_NAME}${NC}"
+  echo -e " Cluster Package : ${TC}${CLUSTER_PKG_FOLDER}${NC}"
+  echo -e " OVA Template    : ${TC}${OVA_TEMPLATE_FILE}${NC}"
+  echo
+  echo -e "${TC}-----------------------------------------------------------------------------------${NC}"
+  echo
+
+}
+
+PLATFORM=`uname -ra`
+if [ -z "${INVENTORY_FOLDER}" ]; then
+  read -s "Enter the target cluster folder: " INVENTORY_FOLDER
+fi
+
+INVENTORY_FILE=./clusters/$INVENTORY_FOLDER/hosts
+
+if [ ! -f $INVENTORY_FILE ]; then
+  echo
+  echo "Unable to find inventory file @: ${INVENTORY_FILE}"
+  exit 1
+fi
+
+CLUSTER_NAME=`sed -n '/^cluster_name=/ {s///p;q;}' $INVENTORY_FILE | tr -d '\n' | tr -d '\r'`
+REMOTE_USER=`sed -n '/^remote_user=/ {s///p;q;}' $INVENTORY_FILE | tr -d '\n' | tr -d '\r'`
+CLUSTER_PKG_PATH=`dirname $INVENTORY_FILE`
+CLUSTER_PKG_FOLDER=${CLUSTER_PKG_PATH//.\/clusters\//} 
+
+if [ -f clusters/$CLUSTER_PKG_FOLDER/.passwords ]; then
+  source clusters/$CLUSTER_PKG_FOLDER/.passwords
+fi
+
+TEMP_SCRIPT_PATH=./tmp/$CLUSTER_PKG_FOLDER
+
+OVA_TEMPLATE_FILE=node-packer/images/cluster-node.ova
+REMOTE_USER=sysop
+
+TC=''
+NC=''
+if [ "$TERM" == "xterm-256color" ]; then
+  TC='\033[1;34m'
+  NC='\033[0m' # No Color
+fi 
+
+cluster_info_display
+
+START_TIME=$SECONDS
+
+if [ ! -f $OVA_TEMPLATE_FILE ]; then
+  echo "Unable to locate template file @: ${OVA_TEMPLATE_FILE}"
+  echo "Attempting to build..."
+  cd node-packer
+  bash build-node
+  cd ..
+fi
+
+if [ ! -f $OVA_TEMPLATE_FILE ]; then
+  echo "Unable to build template ova: ${OVA_BUILD_TYPE}"
+  exit 1
+fi
+
+desktop_deploy
+
+ELAPSED_TIME=$(($SECONDS - $START_TIME))
+echo "Deployed in: $(($ELAPSED_TIME/60)) min $(($ELAPSED_TIME%60)) sec" 
+echo -e "${TC}------------------------------------------------------------${NC}"
+echo
+
+echo -e "The ${TC}kube-config${NC} file can be found at clusters/${TC}${CLUSTER_PKG_FOLDER}/kube-config${NC}"
+echo 
+echo -e "${TC}kubectl --kubeconfig=clusters/${CLUSTER_PKG_FOLDER}/kube-config get pods --all-namespaces${NC}"
+echo 
+#echo -e "To connect to the Kubernetes Dashboard:"
+#echo
+#echo -e "${TC}kubectl --kubeconfig=clusters/${CLUSTER_PKG_FOLDER}/kube-config proxy${NC}"
+#echo
+
+#echo -e "Open ${TC}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login${NC}"
+#echo
+
+#echo -e "Authenticate using the token found in clusters/${TC}${CLUSTER_PKG_FOLDER}/web-ui-token${NC}"
+#echo
+echo -e "Enjoy your ${TC}Kubernetes${NC}!"
+echo
+
+
+  

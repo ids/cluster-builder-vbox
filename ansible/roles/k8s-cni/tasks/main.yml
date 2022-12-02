@@ -1,0 +1,26 @@
+- name: install calico CNI manifest
+  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  when: "inventory_hostname == groups['k8s_masters'][0]"
+
+#- name: install canal manifest
+#  shell: curl https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/canal.yaml --output /home/sysop/canal.yaml
+#  become: true
+#  when: "inventory_hostname == groups['k8s_masters'][0]"
+
+#- name: install canal manifest
+#  shell: kubectl apply -f /home/sysop/canal.yaml
+#  become: true
+#  when: "inventory_hostname == groups['k8s_masters'][0]"
+
+- name: allow the CNI time to deploy
+  pause:
+    seconds: 20
+
+- name: display cluster master node status
+  shell: kubectl get nodes
+  register: final_nodes_out
+  when: "inventory_hostname == groups['k8s_masters'][0]"
+
+- debug: msg="{{ final_nodes_out.stdout_lines }}"
+  when: "inventory_hostname == groups['k8s_masters'][0]"
+

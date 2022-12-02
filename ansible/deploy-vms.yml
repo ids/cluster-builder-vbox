@@ -1,0 +1,151 @@
+---
+- hosts: all
+  gather_facts: false
+
+  vars:
+    desktop_vm_folder: ../virtuals
+    ova_template_path: "../{{ ova_template }}"
+    gen_script_folder: ../tmp/{{ cluster_pkg_folder }}
+  roles:
+    - role: common
+
+  tasks:    
+
+  - name: set server_static_ip_wait_seconds if undefined
+    set_fact:
+      server_static_ip_wait_seconds: 30
+    run_once: true
+    when: server_static_ip_wait_seconds is undefined
+
+  - debug: msg="{{ ova_template_path }}"
+
+  - name: ensure the target folder for generated scripts exists
+    local_action:
+      module: file
+      path: "{{ gen_script_folder }}"
+      state: directory
+    run_once: true
+
+  - name: deploy each VM to virtualbox with numvcpus and memsize
+    local_action:
+      module: shell
+      _raw_params: "vboxmanage import {{ ova_template_path }} --vsys 0 --vmname {{ node_hostname }} --vsys 0 --cpus {{ numvcpus }} --vsys 0 --memory {{ memsize }} "
+
+#  - name: add VM to k8s group
+#    local_action:
+#      module: shell
+#      _raw_params: "vboxmanage modifyvm {{ node_hostname }} --groups \"/k8s\""
+#    become: false
+  
+ # - name: adjust primary network interface
+ #   local_action:
+ #     module: shell
+ #     _raw_params: "vboxmanage modifyvm {{ node_hostname }} --nic1 hostonly --hostonlyadapter1 vboxnet0"
+ #   become: false
+
+  - name: add 2nd host only network interface
+    local_action:
+      module: shell
+      _raw_params: "vboxmanage modifyvm {{ node_hostname }} --nic2 hostonly --hostonlyadapter2 vboxnet0"
+    become: false
+
+#  - name: add 2nd network interface for NAT
+#    local_action:
+#      module: shell
+#      _raw_params: "vboxmanage modifyvm {{ node_hostname }} --nic2 nat"
+#    become: false
+
+  - name: start VMs
+    local_action:
+      module: shell
+      _raw_params: "vboxmanage startvm {{ node_hostname }} --type headless"
+    become: false
+
+  - name: waiting for VMs to get IP addresses
+    pause:
+      seconds: 30
+
+  - name: fetch the IP addresses
+    local_action:
+      module: shell
+      _raw_params: "vboxmanage guestproperty get {{ node_hostname }} \"/VirtualBox/GuestInfo/Net/1/V4/IP\" | sed 's/Value: //g' "
+    register: vm_ip
+  
+  - debug: msg="{{ vm_ip.stdout }}"
+
+  - fail: msg="No IP Found! Unable to get the IP address from the VM!"
+    when: vm_ip is not defined
+
+  - name: generate the netplan 
+    local_action:
+      module: template
+      src: templates/netplan.j2
+      dest: "{{ gen_script_folder }}/{{ node_hostname }}_netplan.yaml"
+    become: false
+
+  - name: copy up the netplan 
+    local_action:
+      module: shell
+      _raw_params: "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ gen_script_folder }}/{{ node_hostname }}_netplan.yaml sysop@{{ vm_ip.stdout }}:/home/sysop"
+    become: false
+
+  - name: move the netplan into place 
+    local_action:
+      module: shell
+      _raw_params: "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sysop@{{ vm_ip.stdout }} 'sudo cp /home/sysop/{{ node_hostname }}_netplan.yaml /etc/netplan/00-installer-config.yaml'"
+    become: false
+
+  - name: cat the new netplans
+    local_action:
+      module: shell
+      _raw_params: "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null sysop@{{ vm_ip.stdout }} 'sudo cat /etc/netplan/00-installer-config.yaml'"
+    register: vm_netplan
+    become: false
+  
+  - debug: msg="{{ vm_netplan.stdout }}"
+
+  - name: waiting for netplans
+    pause:
+      seconds: 5
+
+  - name: stop VMs 
+    local_action:
+      module: shell
+      _raw_params: "vboxmanage controlvm {{ node_hostname }}  acpipowerbutton --type headless"
+    become: false
+
+  - name: waiting for VMs to stop
+    pause:
+      seconds: 10
+
+  - name: start VMs again
+    local_action:
+      module: shell
+      _raw_params: "vboxmanage startvm {{ node_hostname }} --type headless"
+    become: false
+
+  - name: waiting for VMs to start
+    pause:
+      seconds: 30
+
+  - name: fetch the assigned STATIC IP addresses
+    local_action:
+      module: shell
+      _raw_params: "vboxmanage guestproperty get {{ node_hostname }} \"/VirtualBox/GuestInfo/Net/1/V4/IP\" | sed 's/Value: //g'  "
+    register: vm_static_ip
+  
+  - debug: msg="{{ vm_static_ip.stdout }}"
+
+  - name: waiting {{ server_static_ip_wait_seconds }} seconds for servers to start up and fetch their permanent ip addresses
+    local_action: wait_for host={{ inventory_hostname }} port=22 state=started timeout=600
+    become: false
+
+#  - name: stop VMs 
+#    local_action:
+#      module: shell
+#      _raw_params: "vboxmanage controlvm {{ node_hostname }} poweroff --type headless"
+#    become: false
+
+#  - name: waiting for VMs to stop
+#    pause:
+#      seconds: 30

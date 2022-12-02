@@ -1,0 +1,94 @@
+---
+- name: determine base control-builder path
+  set_fact:
+    cluster_builder_dir: "{{ playbook_dir | replace('/ansible', '') }}"
+  when: cluster_pkg_folder is undefined
+  run_once: true
+
+- debug: var=cluster_builder_dir
+  when: cluster_pkg_folder is undefined
+  run_once: true
+
+- name: determine cluster_pkg_folder
+  set_fact:
+    cluster_pkg_folder: "{{ inventory_dir | replace(cluster_builder_dir + '/clusters/', '') }}"
+  when: cluster_pkg_folder is undefined
+  run_once: true
+
+- debug: var=cluster_pkg_folder
+  run_once: true
+
+- name: determine FQDN node name
+  set_fact:
+    node_fqdn: "{{ inventory_hostname | replace('.' + network_dn, '') + '.' + network_dn}}"
+  when: network_dn is defined
+
+- name: calculated FQDN node host name
+  debug: var=node_fqdn
+  when: network_dn is defined
+
+- name: determine simple node name
+  set_fact:
+    node_hostname: "{{ inventory_hostname | replace('.' + network_dn, '') }}"
+  when: network_dn is defined
+
+- name: calculated simple node host name
+  debug: var=node_hostname
+  when: network_dn is defined
+
+- name: set default platform to linux
+  set_fact:
+    platform: "linux"
+  run_once: true
+
+- name: determine if platform is macOS
+  local_action:
+    module: shell
+    _raw_params: "uname -ra | grep Darwin | wc -l | xargs"
+  become: false
+  run_once: true
+  register: platform_is_darwin
+    
+- name: set platform fact when macOS
+  set_fact:
+    platform: "darwin"
+  when: platform_is_darwin.stdout == "1"
+  run_once: true
+
+- name: determine if platform is Windows
+  local_action:
+    module: shell
+    _raw_params: "uname -ra | grep Microsoft | wc -l | xargs"
+  become: false
+  run_once: true
+  register: platform_is_windows
+    
+- name: set platform fact when Windows
+  set_fact:
+    platform: "windows"
+  when: platform_is_windows.stdout == "1"
+  run_once: true
+
+- name: platform
+  debug: var=platform
+  run_once: true
+
+- name: calculate VM folder names for Windows
+  set_fact:
+    vm_folder_name: "{{ inventory_hostname }}"
+  when: platform == "windows"
+
+- name: calculate VM folder names for macOS
+  set_fact:
+    vm_folder_name: "{{ inventory_hostname }}.vmwarevm"
+  when: platform == "darwin"
+
+- name: calculate VM folder names for Linux
+  set_fact:
+    vm_folder_name: "{{ inventory_hostname }}"
+  when: platform == "linux"
+
+- name: set overwrite_existing_vms default
+  set_fact:
+    overwrite_existing_vms: false
+  when: overwrite_existing_vms is undefined

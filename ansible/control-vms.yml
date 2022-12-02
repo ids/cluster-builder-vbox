@@ -1,0 +1,23 @@
+---
+- hosts: all
+  gather_facts: false
+  roles: 
+    - common
+  tasks: 
+    - name: "{{ vm_action }} the VMs"
+      local_action:
+        module: shell
+        _raw_params: vboxmanage controlvm {{ node_hostname }} {{ vm_action }} 
+      when: vm_action == 'resume' or vm_action == 'pause' or vm_action == 'savestate'
+
+    - name: "{{ vm_action }} the VMs"
+      local_action:
+        module: shell
+        _raw_params: vboxmanage startvm  {{ node_hostname }} --type headless
+      when: vm_action == 'start' 
+
+    - name: "{{ vm_action }} the VMs"
+      local_action:
+        module: shell
+        _raw_params: vboxmanage controlvm {{ node_hostname }} acpipowerbutton 
+      when: vm_action == 'stop' 

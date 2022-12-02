@@ -1,0 +1,20 @@
+- name: copy the join_cmd
+  copy:
+    dest: /root/join_cmd
+    src: ../clusters/{{ cluster_pkg_folder }}/join_cmd
+    mode: 0766   
+  become: true   
+
+- name: start kubelet on worker nodes
+  service:
+    name: kubelet
+    state: started
+    enabled: yes
+  become: true
+
+- name: join worker to cluster
+  shell: "/root/join_cmd"
+  register: worker_join
+
+- name: worker join result
+  debug: msg="{{ worker_join.stdout_lines }}"

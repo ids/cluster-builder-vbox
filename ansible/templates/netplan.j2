@@ -1,0 +1,13 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s3:
+      dhcp4: yes
+      dhcp-identifier: mac
+    enp0s8:
+      dhcp4: no
+      dhcp-identifier: mac
+      addresses: [{{ hostvars[inventory_hostname]['ansible_host'] }}/24]
+      nameservers:
+        addresses: [8.8.8.8,8.8.4.4]
