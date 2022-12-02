@@ -1,21 +1,21 @@
-#- name: generate the kubeadm yaml configuration
-#  template:
-#    src: templates/k8s-kubeadm2.j2
-#    dest: /home/sysop/kube-adm.yml
+- name: generate the kubeadm yaml configuration
+  template:
+    src: templates/k8s-kubeadm2.j2
+    dest: /home/sysop/kube-adm.yml
 
 - name: ensure the kubelet is enabled
   shell: sudo systemctl enable kubelet
   become: true
 
+#- name: initialize cluster on first master
+#  shell: "kubeadm init --pod-network-cidr=10.244.0.0/24 --apiserver-advertise-address={{ ansible_host }} --upload-certs "
+#  ignore_errors: false
+#  become: true
+
 - name: initialize cluster on first master
-  shell: "kubeadm init --pod-network-cidr=10.244.0.0/24 --apiserver-advertise-address={{ ansible_host }} --upload-certs "
+  shell: "sudo kubeadm init --config /home/sysop/kube-adm.yml --upload-certs"
   ignore_errors: false
   become: true
-
-#- name: initialize cluster on first master
-#  shell: "sudo kubeadm init --config /home/sysop/kube-adm.yml --v=5"
-#  ignore_errors: false
-# become: true
 
 - name: get worker join command
   shell: "kubeadm token create --print-join-command"

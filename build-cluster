@@ -118,6 +118,10 @@ echo
 #echo -e "Open ${TC}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login${NC}"
 #echo
 
+echo -e "To add the cluster to your existing contexts..."
+echo
+echo -e "${TC}export KUBECONFIG=\"$PWD/${CLUSTER_PKG_FOLDER}/kube-config:$HOME/.kube/config\"${NC}"
+echo
 #echo -e "Authenticate using the token found in clusters/${TC}${CLUSTER_PKG_FOLDER}/web-ui-token${NC}"
 #echo
 echo -e "Enjoy your ${TC}Kubernetes${NC}!"
