@@ -16,6 +16,7 @@ Multi-node Kubernetes clusters in VirtualBox.
 - [VirtualBox 6.x](https://download.virtualbox.org/virtualbox/6.0.24/VirtualBox-6.0.24-139119-OSX.dmg) (packer doesn't play well with 7.x yet)
 - __Packer__ (brew install packer)
 - __Ansible__ (brew install ansible)
+- __kubectl__ (brew install kubectl)
 
 This has been tested on a __macOS__ host thus far and likely won't migrate much further.
 
