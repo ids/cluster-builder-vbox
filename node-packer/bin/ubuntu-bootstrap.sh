@@ -6,7 +6,7 @@ set -o pipefail
 
 echo '>>> Installing base dependencies'
 sudo apt -y install libssl-dev apt-transport-https ca-certificates \
-git wget chrony curl bash tar nano gnupg2 software-properties-common
+git wget chrony curl bash tar nano gnupg2 software-properties-common nfs-common
 
 echo '>>> Appending Authorized Keys for [sysop]'
 mkdir -p /home/sysop/.ssh

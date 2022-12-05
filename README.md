@@ -83,7 +83,8 @@ bash control-cluster eg/k8s [start | stop | pause | resume | savestate]
 This makes it easy to suspend a functioning cluster and resume it later, which is very useful in development.
 
 
-## Notes
+## Addons
+There are a number of additional components in the __addons__ folder that can be useful.
 
 ### Ingress NGINX
 
@@ -91,3 +92,18 @@ This makes it easy to suspend a functioning cluster and resume it later, which i
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.5.1/deploy/static/provider/cloud/deploy.yaml
 ```
 [NGINX Test Instructions](https://kubernetes.github.io/ingress-nginx/deploy/#local-testing)
+
+### NFS Provisioner
+This is setup to use one of the local worker nodes as an NFS storage location.
+
+Each worker node has a directory __/storage/nfs-provisioner__ and will be used to store the PVCs depending on which node the POD is deployed.
+
+It creates a StorageClass called __nfs-dynamic__.
+
+### Metallb
+The IP pool is set to a range within the VirtualBox __host only__ default network of 192.168.56.0/24, and uses the range 30-45 for the local pool.  This will allow any services using __LoadBalancer__ to get a dedicated address on the host only network.
+
+### MySQL
+A quick client configuration that leverages both the Metallb and NFS Provisioner.
+
+
