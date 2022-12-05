@@ -106,3 +106,7 @@ sudo netplan apply
 echo '>>> /etc/hosts'
 sudo cat /etc/hosts
 
+echo '>>> Prep directory for NFS storage provisioner'
+sudo mkdir -p /storage/nfs-provisioner
+sudo chmod 777 -R /storage/nfs-provisioner
+
