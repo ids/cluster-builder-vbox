@@ -12,5 +12,5 @@
   lineinfile:
     path: /etc/fstab
     state: absent
-    regexp: '^/dev/mapper/system-swap'
+    regexp: '^/swap.img'
 
