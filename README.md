@@ -77,10 +77,10 @@ When the cluster has finished a message will be displayed with instructions for 
 ## Control Kubernetes Cluster VMs
 
 ```
-bash control-cluster eg/k8s [start | stop | pause | resume | savestate]
+bash clusterctl eg/k8s [start | stop | pause | resume | savestate]
 ```
 
-This makes it easy to suspend a functioning cluster and resume it later, which is very useful in development.
+The __clusterctl__ script uses ansible and the hosts file to easily suspend a functioning cluster and resume it later, which is very useful in development.
 
 
 ## Addons
@@ -105,5 +105,25 @@ The IP pool is set to a range within the VirtualBox __host only__ default networ
 
 ### MySQL
 A quick client configuration that leverages both the Metallb and NFS Provisioner.
+
+### ELK
+Not using `helm` is always refreshing:
+
+```
+kubectl apply -f elastic.yaml 
+kubectl apply -f filebeat.yaml 
+kubectl apply -f logstash.yaml 
+kubectl apply -f kibana.yaml
+```
+
+> Everything goes into the `kube-system` namespace.  The ElasticSearch index is prefixed with `k8s-logs` as configured in the __Filebeat__ config yaml.
+
+### Kill a PVC Stuck Terminating
+
+```
+kubectl patch pvc {PVC_NAME} -p '{"metadata":{"finalizers":null}}'
+```
+
+You need to patch the PVC to set the “finalizers” setting to null, this allows the final unmount from the node, and the PVC can be deleted.
 
 
