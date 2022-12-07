@@ -132,7 +132,14 @@ kubectl apply -f kibana.yaml
 
 > Everything goes into the `kube-system` namespace.  The ElasticSearch index is prefixed with `k8s-logs` as configured in the __Filebeat__ config yaml.
 
-### Kill a PVC Stuck Terminating
+### Istio
+
+The [Istio Install Guide](https://istio.io/latest/docs/setup/getting-started/#dashboard
+) actually works on these clusters.
+
+## General Notes
+
+#### Kill a PVC Stuck Terminating
 
 ```
 kubectl patch pvc {PVC_NAME} -p '{"metadata":{"finalizers":null}}'
