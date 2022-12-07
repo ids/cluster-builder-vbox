@@ -56,6 +56,21 @@ There is an example file in __clusters/eg__
 ```
 bash build-cluster eg/k8s
 ```
+For your own cluster you might copy the __eg/k8s/hosts__ file to a new folder named for your group of clusters.  It can be any sort of organization.
+
+```
+mkdir -p clusters/my-clusters/k8s
+cp cluster/eg/k8s/hosts clusters/my-clusters/k8s/
+```
+
+Any folder apart from __eg__ in the __clusters__ folder will not be tracked by git for this repo, and may be initialized as a git sub repo to store your cluster configurations elsewhere.
+
+Once you have created your cluster package folder and inventory hosts file:
+
+```
+bash build-cluster my-clusters/k8s
+```
+
 
 This has 2-3 phases:
 
@@ -68,7 +83,6 @@ After the cluster node is built, stage one is bypassed.  To rebuild the cluster-
 ```
 rm -rf node-packer/images
 ```
-
 And then stage one will repeat and a fresh __cluster-node.ova__ will be built by packer.
 
 When the cluster has finished a message will be displayed with instructions for using the cluster.  The `kubeconfig` file is downloaded to the __cluster package folder__ (eg. eg/k8s), which you can then merge to your ~/.kube/config, or reference explicitly.
