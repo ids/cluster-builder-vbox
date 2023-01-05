@@ -22,7 +22,15 @@ Multi-node Kubernetes clusters in VirtualBox.
 
 > How great is that?
 
-This has been developed and tested on a __macOS Monterey Macbook 2019 i9__ host thus far and likely won't migrate much further.  The current k8s build is __Kubernetes 1.26.0__.
+You will also need to download the _Ubuntu Live Server 22.04 ISO_ image into the __node-packer/iso__ folder:
+
+```
+curl https://releases.ubuntu.com/22.04/ubuntu-22.04.1-live-server-amd64.iso --output node-packer/iso/ubuntu-22.04.1-live-server-amd64.iso
+```
+
+This is used by packer to build the base cluster nodes.  If it is not pre-downloaded, packer will auto-download it, but unfortunately this happens every time you run a packer build, and for some reason packer does not cache the isos.
+
+> Developed and tested on a __macOS Monterey Macbook 2019 i9__ host thus far and likely won't migrate much further.  The current k8s build is __Kubernetes 1.26.0__.
 
 ## Cluster Config Files
 In the style of the original VMware based __cluster-builder__ the ansible inventory host files are the K8s configuration files, and are stored in:
@@ -62,7 +70,7 @@ __Note:__ It is important that all host names resolve, at least at the host mach
 ```
 bash build-cluster eg/k8s
 ```
-For your own cluster you might copy the __eg/k8s/hosts__ file to a new folder named for your group of clusters.  It can be any sort of organization.
+For your own cluster you might copy the __eg/k8s/hosts__ file to a new folder named for your group of clusters.  It can be any sort of organization name.
 
 ```
 mkdir -p clusters/my-clusters/k8s
@@ -71,9 +79,9 @@ cp cluster/eg/k8s/hosts clusters/my-clusters/k8s/
 
 Any folder apart from __eg__ in the __clusters__ folder will not be tracked by git for this repo, and may be initialized as a git sub repo to store your cluster configurations elsewhere.
 
-__Note:__ _Before building your cluster make sure a host only network exists in VirtualBox (File -> Host Network Manager).  If __vboxnet0__ does not already exist, hit the Create button to create it._
+__Note:__ _Before building your cluster make sure a host only network exists in VirtualBox (File -> Host Network Manager).  If __vboxnet0__ does not already exist, hit the Create button to create it and name it __vboxnet0__.  Leave the IP address and DHCP server settings as default._
 
-Once you have created your cluster package folder and inventory hosts file:
+Once you have created your cluster package folder and inventory hosts file, you can build the k8s cluster:
 
 ```
 bash build-cluster my-clusters/k8s
@@ -96,6 +104,25 @@ When the cluster has finished a message will be displayed with instructions for 
 
 __Note:__ _Multi-master k8s is not yet implemented, so only the first master specified in the hosts file will be used.  Hopefully coming soon._
 
+When everything is complete you should see something like this in the terminal:
+
+```
+------------------------------------------------------------
+SUCCESS: cluster created!
+Deployed in: 24 min 19 sec
+------------------------------------------------------------
+
+The kube-config file can be found at clusters/local/k8s/kube-config
+
+kubectl --kubeconfig=clusters/local/k8s/kube-config get pods --all-namespaces
+
+To add the cluster to your existing contexts...
+
+export KUBECONFIG="/Users/seanhig/Workspace/cluster-builder-vbox/local/k8s/kube-config:/Users/seanhig/.kube/config"
+
+Enjoy your Kubernetes!
+```
+
 ## Control Kubernetes Cluster VMs
 
 ```
@@ -106,7 +133,7 @@ The __clusterctl__ script uses ansible and the hosts file to easily suspend a fu
 
 
 ## Addons
-There are a number of additional components in the __addons__ folder that can be useful.
+There are a number of additional Kubernetes components and stacks in the __addons__ folder that can be useful.
 
 ### Ingress NGINX
 
