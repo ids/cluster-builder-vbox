@@ -55,6 +55,8 @@ k8s-w2.vm.idstudios.io ansible_host=192.168.56.61 numvcpus=2 memsize=2524
 
 There is an example file in __clusters/eg__
 
+__Note:__ It is important that all host names resolve, at least at the host machine level.  The examples use AWS Route 53 for the DNS names (k8s-m1.vm.idstudios.io), so all of the example DNS names will resolve on any machine.  If you use your own host names, which is highly recommended, make sure they resolve for VirtualBox.  Also make sure to also update the __network_dn__ accordingly.
+
 ## Create a Kubernetes Cluster
 
 ```
