@@ -37,8 +37,16 @@
       "shutdown_command": "echo 'TempPass2017'|sudo -S /sbin/halt -h -p",
       "vm_name": "cluster-node",
       "output_directory": "images",
-      "format": "ova"
-      
+      "format": "ova",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nat-localhostreachable1",
+          "on"
+        ]
+
+      ]
     }
   ]
 }

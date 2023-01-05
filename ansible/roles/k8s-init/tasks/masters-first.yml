@@ -31,8 +31,6 @@
 
 - name: setup kubectl configuration
   shell: rm -rf $HOME/.kube && mkdir -p $HOME/.kube && cp /etc/kubernetes/admin.conf $HOME/.kube/config && chown $(id -u):$(id -g) $HOME/.kube/config
-  args:
-    warn: false
 
 - name: fetch the join_cmd file
   fetch:

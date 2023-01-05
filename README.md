@@ -13,15 +13,19 @@ Multi-node Kubernetes clusters in VirtualBox.
 
 ## Requirements:
 
-- [VirtualBox 6.x](https://download.virtualbox.org/virtualbox/6.0.24/VirtualBox-6.0.24-139119-OSX.dmg) (packer doesn't play well with 7.x yet)
-- __Packer__ (brew install packer)
-- __Ansible__ (brew install ansible)
-- __kubectl__ (brew install kubectl)
+- [VirtualBox 7.x](https://virtualbox.org/)
+- __Packer 1.8.5+__ 
+- __Ansible 2.14.1+__ 
+- __kubectl__ 
 
-This has been tested on a __macOS__ host thus far and likely won't migrate much further.
+`brew install virtualbox packer ansible kubectl`
+
+> How great is that?
+
+This has been developed and tested on a __macOS Monterey Macbook 2019 i9__ host thus far and likely won't migrate much further.  The current k8s build is __Kubernetes 1.26.0__.
 
 ## Cluster Config Files
-In the style of __cluster-builder__ the ansible inventory host files are the K8s configuration files, and are stored in:
+In the style of the original VMware based __cluster-builder__ the ansible inventory host files are the K8s configuration files, and are stored in:
 
 ```
  clusters/[org folder]/[cluster name folder]/hosts
@@ -65,12 +69,13 @@ cp cluster/eg/k8s/hosts clusters/my-clusters/k8s/
 
 Any folder apart from __eg__ in the __clusters__ folder will not be tracked by git for this repo, and may be initialized as a git sub repo to store your cluster configurations elsewhere.
 
+__Note__: _Before building your cluster make sure a host only network exists in VirtualBox (File -> Host Network Manager).  If __vboxnet0__ does not already exist, hit the Create button to create it._
+
 Once you have created your cluster package folder and inventory hosts file:
 
 ```
 bash build-cluster my-clusters/k8s
 ```
-
 
 This has 2-3 phases:
 

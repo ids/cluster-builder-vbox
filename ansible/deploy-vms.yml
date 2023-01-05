@@ -46,7 +46,7 @@
   - name: add 2nd host only network interface
     local_action:
       module: shell
-      _raw_params: "vboxmanage modifyvm {{ node_hostname }} --nic2 hostonly --hostonlyadapter2 vboxnet0"
+      _raw_params: "vboxmanage modifyvm {{ node_hostname }} --nic2 hostonlynet --host-only-net2=vboxnet0"
     become: false
 
 #  - name: add 2nd network interface for NAT
@@ -63,7 +63,7 @@
 
   - name: waiting for VMs to get IP addresses
     pause:
-      seconds: 30
+      seconds: 45
 
   - name: fetch the IP addresses
     local_action:
@@ -72,9 +72,6 @@
     register: vm_ip
   
   - debug: msg="{{ vm_ip.stdout }}"
-
-  - fail: msg="No IP Found! Unable to get the IP address from the VM!"
-    when: vm_ip is not defined
 
   - name: generate the netplan 
     local_action:
