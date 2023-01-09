@@ -3,13 +3,13 @@ Cluster Builder for VirtualBox
 
 Multi-node Kubernetes clusters in VirtualBox.
 
->Still in the early stages...
+> Still in the early stages...
 
->There must be over a half dozen different ways to get K8s on your desktop these days, but none of them are a very good likeness to real kubernetes.  Nearly all are single node master workloads - and that isn't really a cluster.  I found myself missing the true K8s experience I used to have with [cluster builder](https://github.com/ids/cluster-builder).
+> There must be over a half dozen different ways to get K8s on your desktop these days, but none of them are a very good likeness to real kubernetes.  Nearly all are single node master workloads - and that isn't really a cluster.  I found myself missing the true K8s experience I used to have with [cluster builder](https://github.com/ids/cluster-builder).
 
->VMware jumped the shark.  No point in looking back.  
+> VMware jumped the shark.  No point in looking back.  
 
->It was time to do a VirtualBox edition.
+> It was time to do a VirtualBox edition.
 
 ## Requirements:
 
@@ -22,6 +22,16 @@ Multi-node Kubernetes clusters in VirtualBox.
 
 > How great is that?
 
+> Developed and tested on a __macOS Monterey Macbook 2019 i9__ host thus far and likely won't migrate much further.  The current k8s build is __Kubernetes 1.26.0__.
+
+
+## Setup
+Before building the cluster for the first time there are few setup steps required:
+
+### Setup VirtualBox Host Network
+Before building your cluster make sure a host only network exists in VirtualBox (File -> Host Network Manager).  If __vboxnet0__ does not already exist, hit the Create button to create it and name it __vboxnet0__.  Leave the IP address and DHCP server settings as default.
+
+### Download Ubuntu Server LTS
 You will also need to download the _Ubuntu Live Server 22.04 ISO_ image into the __node-packer/iso__ folder:
 
 ```
@@ -30,7 +40,8 @@ curl https://releases.ubuntu.com/22.04/ubuntu-22.04.1-live-server-amd64.iso --ou
 
 This is used by packer to build the base cluster nodes.  If it is not pre-downloaded, packer will auto-download it, but unfortunately this happens every time you run a packer build, and for some reason packer does not cache the isos.
 
-> Developed and tested on a __macOS Monterey Macbook 2019 i9__ host thus far and likely won't migrate much further.  The current k8s build is __Kubernetes 1.26.0__.
+### Setup Host SSH
+When packer builds the nodes it includes the __node-packer/keys/authorized_keys__ file in the image for passwordless SSH access, which is used by __packer__ and __ansible__ and ultimately provides access to the K8s nodes.  If this file does not exist in __node-packer/keys__ the build script will attempt to copy `~/.ssh/id_rsa.pub ` into an `authorized_keys` file.
 
 ## Cluster Config Files
 In the style of the original VMware based __cluster-builder__ the ansible inventory host files are the K8s configuration files, and are stored in:
@@ -78,8 +89,6 @@ cp cluster/eg/k8s/hosts clusters/my-clusters/k8s/
 ```
 
 Any folder apart from __eg__ in the __clusters__ folder will not be tracked by git for this repo, and may be initialized as a git sub repo to store your cluster configurations elsewhere.
-
-__Note:__ _Before building your cluster make sure a host only network exists in VirtualBox (File -> Host Network Manager).  If __vboxnet0__ does not already exist, hit the Create button to create it and name it __vboxnet0__.  Leave the IP address and DHCP server settings as default._
 
 Once you have created your cluster package folder and inventory hosts file, you can build the k8s cluster:
 
