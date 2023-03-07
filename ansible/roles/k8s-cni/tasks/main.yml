@@ -1,5 +1,5 @@
 - name: install calico CNI manifest
-  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  shell: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
   when: "inventory_hostname == groups['k8s_masters'][0]"
 
 #- name: install canal manifest
