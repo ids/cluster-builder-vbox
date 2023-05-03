@@ -13,16 +13,16 @@ Multi-node Kubernetes clusters in VirtualBox.
 
 ## Requirements:
 
-- [VirtualBox 7.x](https://virtualbox.org/)
-- __Packer 1.8.5+__ 
-- __Ansible 2.14.1+__ 
+- [VirtualBox 7.x Latest](https://virtualbox.org/)
+- __Packer 1.8+__ 
+- __Ansible 2.14+__ 
 - __kubectl__ 
 
 `brew install virtualbox packer ansible kubectl`
 
 > How great is that?
 
-> Developed and tested on a __macOS Monterey Macbook 2019 i9__ host thus far and likely won't migrate much further.  The current k8s build is __Kubernetes 1.26.0__.
+> Developed and tested on a __macOS Monterey Macbook 2019 i9__ host thus far and likely won't migrate much further.  The current k8s build is __Kubernetes 1.27.1__.
 
 
 ## Setup
